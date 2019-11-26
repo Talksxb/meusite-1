@@ -1,7 +1,7 @@
-var enderecoContrato = "0x53C34f4897a4111f9299a9b734aD1d5c380a8Ce5";
+var enderecoContrato = "0x129970AD523b347A8302429a7F6E5D5298130a87";
 var provedor = new ethers.providers.Web3Provider(web3.currentProvider);
 ethereum.enable();
-var signatario = provedor.getSigner();
+var signatario = provedor.getSigner(); //busca a assinatura da chave privada
 var contrato = new ethers.Contract(enderecoContrato, abiContrato, signatario);
 
 function registrarMudancaStatus() {
@@ -38,6 +38,51 @@ function buscaStatusContrato() {
     contrato.statusPagamentoAluguel()
     .then( (resultado) => {
         campoStatus.innerHTML = resultado;
+    })
+    .catch( (err) => {
+        console.error(err);
+        campoStatus.innerHTML = err;
+    });
+}
+
+function encerrarContrato()
+{
+    var textoEncerrar = document.getElementById("encerrarContratoTx");
+
+    textoEncerrar.innerHTML="conectando para encerramento de contrato ...";
+    contrato.fimDoContrato()
+    .then( (transacao)=>
+    {
+            console.log("encerrarContrato - Transacao", transacao);
+            textoEncerrar.innerHTML="aguarde encerrando o contrato ...";
+        
+            transacao.wait()
+            .then((resultado)=>
+            {
+                buscaFimContrato();
+            })
+            .catch((err) =>
+            {
+                console.error("encerrarContrato - Aguardando tx ser minerada");
+                console.error(err);
+                textoEncerrar.innerHTML="erro ao se conectar ...";
+            })
+     })
+     .catch((err)=>
+     {
+            console.error("encerrarContrato - Aguardando tx ser minerada");
+            console.error(err);
+            textoEncerrar.innerHTML="erro ao se conectar ...";
+     })
+}
+
+function buscaFimContrato() {
+    var status;
+    var campoStatus = document.getElementById("encerrarContratoTx");     
+    contrato.contratoAtivo()
+    .then( (resultado) => 
+    {
+        campoStatus.innerHTML = "contrato encerrado";
     })
     .catch( (err) => {
         console.error(err);
